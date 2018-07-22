@@ -12,6 +12,8 @@ module.exports = function (RED) {
         var node = this;
         this.name = n.name;
         this.func = n.func;
+        var id = n.id.replace(/[^a-zA-Z0-9]/g, "");
+
         var javaCode = 'import java.awt.*;\n'
                      + 'import java.awt.datatransfer.*;\n'
                      + 'import java.io.*;\n'
@@ -27,7 +29,7 @@ module.exports = function (RED) {
                      + 'import javax.xml.*;\n'
                      + 'import com.google.gson.*;\n'
                      + '\n'
-                     + 'public class JavaFunction {\n'
+                     + 'public class JavaFunction' + id + ' {\n'
                      + '    public static JsonObject main(JsonObject msg) {\n'
                      + this.func + "\n"
                      + '    }\n'
@@ -48,12 +50,12 @@ module.exports = function (RED) {
         this.activeProcesses = {};
 
         node.status({fill: "green", shape: "dot", text: "compiling..."});
-        fs.writeFileSync("JavaFunction.java", javaCode);
+        fs.writeFileSync("JavaFunction" + id + ".java", javaCode);
         var directorySeparator = osType === "Windows_NT" ? "\\" : "/";
         var classSeparator = osType === "Windows_NT" ? ";" : ":";
         var encoding = "Windows_NT" ? "Shift_JIS" : "UTF-8";
         var child;
-        exec("javac -cp " + __dirname + directorySeparator + "gson-2.8.5.jar" + classSeparator + ". JavaFunction.java",
+        exec("javac -cp " + __dirname + directorySeparator + "gson-2.8.5.jar" + classSeparator + ". JavaFunction" + id + ".java",
              { encoding: "binary" },
              function (error, stdout, stderr) {
                 if (stderr) {
@@ -64,7 +66,7 @@ module.exports = function (RED) {
                     console.log("success: compiled");
                     node.status({fill: "green", shape: "dot", text: "compiled"});
 
-                    child = spawn("java", ["-cp", __dirname + directorySeparator + "gson-2.8.5.jar" + classSeparator + ".", "JavaFunction"],
+                    child = spawn("java", ["-cp", __dirname + directorySeparator + "gson-2.8.5.jar" + classSeparator + ".", "JavaFunction" + id],
                                   { encoding: "binary" }
                     );
                     child.stdout.on('data', function (data) {
@@ -108,6 +110,8 @@ module.exports = function (RED) {
                 }
             }
             node.activeProcesses = {};
+	    fs.unlink("JavaFunction" + id + ".java");
+	    fs.unlink("JavaFunction" + id + ".class");
             node.status({});
         });
     }
