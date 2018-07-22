@@ -53,7 +53,7 @@ module.exports = function (RED) {
         fs.writeFileSync("JavaFunction" + id + ".java", javaCode);
         var directorySeparator = osType === "Windows_NT" ? "\\" : "/";
         var classSeparator = osType === "Windows_NT" ? ";" : ":";
-        var encoding = "Windows_NT" ? "Shift_JIS" : "UTF-8";
+        var encoding = osType === "Windows_NT" ? "Shift_JIS" : "UTF-8";
         var child;
         exec("javac -cp " + __dirname + directorySeparator + "gson-2.8.5.jar" + classSeparator + ". JavaFunction" + id + ".java",
              { encoding: "binary" },
