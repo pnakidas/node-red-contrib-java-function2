@@ -1,3 +1,6 @@
+This node contains source code of function and exec nodes in Node-RED core.
+Therefore, this project follows Apache License same as Node-RED core.
+----
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/

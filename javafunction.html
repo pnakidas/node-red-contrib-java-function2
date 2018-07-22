@@ -1,0 +1,72 @@
+<script type="text/x-red" data-template-name="javafunction">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row" style="margin-bottom: 0px;">
+        <label for="node-input-func"><i class="fa fa-wrench"></i> Function</label>
+        <input type="hidden" id="node-input-func">
+    </div>
+    <div class="form-row node-text-editor-row" style="position:relative">
+        <div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-input-func-editor"></div>
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="javafunction">
+    <p>A Java function node supports Java language instead of JavaScript.</p>
+    <p>The node use Gson library to handle JSON data.</p>
+    <p>See the users guide on the follwing URL.</p>
+    <p>https://github.com/google/gson/blob/master/UserGuide.md</p>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('javafunction', {
+        color: "#FFAAAA",
+        category: 'function',
+        defaults: {
+            name: { value: "" },
+            func: { value: 'JsonObject jo = new JsonObject();\n'
+                        + 'jo.addProperty("message", "Hello Java instead of JavaScript!");\n'
+                        + 'jo.addProperty("payload", msg.get("payload").toString());\n'
+                        + 'jo.addProperty("name", System.getProperty("java.vm.name"));\n'
+                        + 'jo.addProperty("version", System.getProperty("java.version"));\n'
+                        + 'msg.add("payload", jo);\n'
+                        + 'return msg;\n'
+            },
+            outputs: { value: 1 },
+        },
+        inputs:1,
+        outputs:1,
+        icon: "function.png",
+        label: function() {
+            return this.name || "";
+        },
+        oneditprepare: function() {
+            this.editor = RED.editor.createEditor({
+                id: 'node-input-func-editor',
+                value: $("#node-input-func").val()
+            });
+            this.editor.focus();
+        },
+        oneditsave: function() {
+            $("#node-input-func").val(this.editor.getValue());
+            this.editor.destroy();
+            delete this.editor;
+        },
+        oneditcancel: function() {
+            this.editor.destroy();
+            delete this.editor;
+        },
+        oneditresize: function(size) {
+            var rows = $("#dialog-form>div:not(.node-text-editor-row)");
+            var height = $("#dialog-form").height();
+            for (var i=0; i<rows.size(); i++) {
+                height -= $(rows[i]).outerHeight(true);
+            }
+            var editorRow = $("#dialog-form>div.node-text-editor-row");
+            height -= (parseInt(editorRow.css("marginTop"))+parseInt(editorRow.css("marginBottom")));
+            $(".node-text-editor").css("height",height+"px");
+            this.editor.resize();
+        }
+    });
+</script>
