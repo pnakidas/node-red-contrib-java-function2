@@ -110,8 +110,10 @@ module.exports = function (RED) {
                 }
             }
             node.activeProcesses = {};
-	    fs.unlink("JavaFunction" + id + ".java");
-	    fs.unlink("JavaFunction" + id + ".class");
+            try {
+                fs.unlinkSync("JavaFunction" + id + ".java");
+                fs.unlinkSync("JavaFunction" + id + ".class");
+            } catch (e) {}
             node.status({});
         });
     }
