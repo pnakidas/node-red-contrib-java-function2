@@ -6,48 +6,51 @@ var iconv = require('iconv-lite');
 
 module.exports = function (RED) {
     "use strict";
-
     function JavaFunctionNode(n) {
         RED.nodes.createNode(this, n);
         var node = this;
         this.name = n.name;
         this.func = n.func;
         var id = n.id.replace(/[^a-zA-Z0-9]/g, "");
-
-        var javaCode = 'import java.awt.*;'
-                     + 'import java.awt.datatransfer.*;'
-                     + 'import java.awt.event.*;'
-                     + 'import java.awt.image.*;'
-                     + 'import java.io.*;'
-                     + 'import java.math.*;'
-                     + 'import java.net.*;'
-                     + 'import java.nio.*;'
-                     + 'import java.text.*;'
-                     + 'import java.util.*;'
-                     + 'import javax.imageio.*;'
-                     + 'import javax.print.*;'
-                     + 'import javax.sound.midi.*;'
-                     + 'import javax.tools.*;'
-                     + 'import javax.xml.*;'
-                     + 'import com.google.gson.*;'
-                     + ''
-                     + 'public class JavaFunction' + id + ' {'
-                     + '    public static JsonObject main(JsonObject msg) throws Exception {'
-                     + this.func
-                     + '    }'
-                     + '    public static void main(String[] args) throws Exception {'
-                     + '        while (true) {'
-                     + '            try {'
-                     + '                Scanner sc = new Scanner(System.in);'
-                     + '                String line = sc.next();'
-                     + '                JsonObject jo = new Gson().fromJson(line, JsonObject.class);'
-                     + '                System.out.print(main(jo));'
-                     + '            } catch (Exception e) {'
-                     + '                System.err.println(e);'
-                     + '            }'
-                     + '        }'
-                     + '    }'
-                     + '}';
+        var javaCode = 'import java.awt.*;' +
+                       'import java.awt.datatransfer.*;' +
+                       'import java.awt.event.*;' +
+                       'import java.awt.image.*;' +
+                       'import java.io.*;' +
+                       'import java.math.*;' +
+                       'import java.net.*;' +
+                       'import java.nio.*;' +
+                       'import java.text.*;' +
+                       'import java.util.*;' +
+                       'import javafx.print.*;' +
+                       'import javafx.scene.media.*;' +
+                       'import javafx.util.converter.*;' +
+                       'import javax.imageio.*;' +
+                       'import javax.print.*;' +
+                       'import javax.sound.midi.*;' +
+                       'import javax.swing.*;' +
+                       'import javax.tools.*;' +
+                       'import javax.xml.*;' +
+                       'import com.google.gson.*;' +
+                       'import com.google.gson.stream.*;' +
+                       '' +
+                       'public class JavaFunction' + id + ' {' +
+                       '    public static JsonObject main(JsonObject msg) throws Exception {' +
+                       this.func +
+                       '    }' +
+                       '    public static void main(String[] args) throws Exception {' +
+                       '        while (true) {' +
+                       '            try {' +
+                       '                Scanner sc = new Scanner(System.in);' +
+                       '                String line = sc.nextLine();' +
+                       '                JsonObject jo = new Gson().fromJson(line, JsonObject.class);' +
+                       '                System.out.print(main(jo));' +
+                       '            } catch (Exception e) {' +
+                       '                System.err.print(e);' +
+                       '            }' +
+                       '        }' +
+                       '    }' +
+                       '}';
         this.topic = n.topic;
         this.activeProcesses = {};
 
@@ -67,15 +70,21 @@ module.exports = function (RED) {
                 } else {
                     console.log("success: compiled");
                     node.status({fill: "green", shape: "dot", text: "compiled"});
-
-                    child = spawn("java", ["-cp", __dirname + directorySeparator + "gson-2.8.5.jar" + classSeparator + ".", "JavaFunction" + id],
-                                  { encoding: "binary" }
-                    );
+                    var options = ["-cp", __dirname + directorySeparator + "gson-2.8.5.jar" + classSeparator + ".", "JavaFunction" + id];
+                    if (osType === "Darwin") {
+                        options.unshift("-Dapple.awt.UIElement=true");
+                    }
+                    child = spawn("java", options, {encoding: "binary"});
                     child.stdout.on('data', function (data) {
-                        data = iconv.decode(data, encoding);
-                        var msg = JSON.parse(data);
-                        node.send(msg);
-                        node.status({});
+                        try {
+                            data = iconv.decode(data, encoding);
+                            var msg = JSON.parse(data);
+                            node.send(msg);
+                            node.status({});
+                        } catch (error) {
+                            node.error("error: " + error);
+                            node.status({fill: "red", shape: "ring", text: "error"});
+                        }
                     });
                     child.stderr.on('data', function (data) {
                         data = iconv.decode(data, encoding);
@@ -92,7 +101,6 @@ module.exports = function (RED) {
                     node.activeProcesses[child.pid] = child;
                 }
             });
-
         this.on("input", function (msg) {
             try {
                 node.status({fill: "green", shape: "dot", text: "executing..."});
@@ -121,4 +129,4 @@ module.exports = function (RED) {
     }
     RED.nodes.registerType("javafunction", JavaFunctionNode);
     RED.library.register("functions");
-}
+};

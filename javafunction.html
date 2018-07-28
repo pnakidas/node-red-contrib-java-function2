@@ -27,11 +27,11 @@
             name: { value: "" },
             func: { value: 'JsonObject jo = new JsonObject();\n'
                         + 'jo.addProperty("message", "Hello Java instead of JavaScript!");\n'
-                        + 'jo.addProperty("payload", msg.get("payload").toString());\n'
+                        + 'jo.addProperty("payload", msg.get("payload").getAsString());\n'
                         + 'jo.addProperty("name", System.getProperty("java.vm.name"));\n'
                         + 'jo.addProperty("version", System.getProperty("java.version"));\n'
                         + 'msg.add("payload", jo);\n'
-                        + 'return msg;\n'
+                        + 'return msg;'
             },
             outputs: { value: 1 },
         },
