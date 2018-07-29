@@ -36,7 +36,7 @@ http://www.baeldung.com/java-home-on-windows-7-8-10-mac-os-x-linux
 ```
 [{"id":"7668777e.580ae8","type":"inject","z":"3cd542b9.3985de","name":"","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":"","x":160,"y":260,"wires":[["f5974570.d119d8"]]},{"id":"f5974570.d119d8","type":"javafunction","z":"3cd542b9.3985de","name":"beep sound","func":"Toolkit.getDefaultToolkit().beep();\nreturn msg;","outputs":1,"x":310,"y":260,"wires":[["279508d1.f18468"]]},{"id":"279508d1.f18468","type":"debug","z":"3cd542b9.3985de","name":"","active":true,"console":false,"complete":"false","x":470,"y":260,"wires":[]}]
 ```
-![beep.png](https://qiita-image-store.s3.amazonaws.com/0/98354/05a30d99-a340-8204-8ec2-b852f7b80f32.png)
+![beep.png](images/beep.png)
 
 ### (2) Blink LED on the keyboard
 ```
